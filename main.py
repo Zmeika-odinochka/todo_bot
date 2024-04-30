@@ -1,12 +1,14 @@
+import telebot
 import random
 
 HELP = """
-help - напечатать справку о программке.
-add - добавить задачу в список (название задачи уточняем у пользователя).
-show - напечатать все добавленные задачи.
-exit - Выход из программы.
-random - добавить случайную задачу на сегодня.
+/help - напечатать справку о программе.
+/add - добавить задачу в список (название задачи уточняем у пользователя).
+/show - напечатать все добавленные задачи.
+/exit - Выход из программы.
+/random - добавить случайную задачу на сегодня.
 """
+
 
 RANDOM_TASK = "Учиться программированию."
 RANDOM_TASKS = [
@@ -14,11 +16,15 @@ RANDOM_TASKS = [
     "Смотреть видосики", "Отдыхать", "Дзен питона"
 ]
 
+
+TOKEN = "6948048739:AAH9GENG2Jl6T24LUpXzluUjvDraZ_Yn6ho"
+bot = telebot.TeleBot(TOKEN)
+
+print("Здравствуйте.")
+
 print(HELP)
 
-tasks = {
-
-}
+tasks = {}
 
 
 def add_todo(date, task):
@@ -28,35 +34,44 @@ def add_todo(date, task):
     else:
         tasks[date] = []
         tasks[date].append(task)
-    print(f"Задача, '{task}', добавлена на дату, {date}")
 
 
-print("Здравствуйте.")
+@bot.message_handler(commands=["help"])
+def help(message):
+    bot.send_message(message.chat.id, HELP)
 
-while True:
-    command = input("Введите команду: ")
 
-    if command == "help":
-        print(HELP)
-    elif command == "add":
-        date = input("Введите дату для добавления задачи: ")
-        task = input("Введите название задачи: ")
-        add_todo(date, task)
+@bot.message_handler(commands=["add"])
+def add(message):
+    command = message.text.split(maxsplit=2)
+    date = command[1].lower()
+    task = command[2]
+    add_todo(date, task)
+    text = (f"Задача '{task}', добавлена на дату - {date}")
+    bot.send_message(message.chat.id, text)
 
-    elif command == "show":
-        date = input("Введите дату для отображение задачи: ")
-        if date in tasks:
-            for task in tasks[date]:
-                print(f"- {task}")
-        else:
-            print("В ваших задачах такой даты нет.")
 
-    elif command == "random":
-        task = random.choice(RANDOM_TASKS)
-        add_todo("Сегодня", task)
+@bot.message_handler(commands=["random"])
+def random_add(message):
+    date = "сегодня"
+    task = random.choice(RANDOM_TASKS)
+    add_todo(date, task)
+    text = (f"Задача '{task}', добавлена на дату - {date}")
+    bot.send_message(message.chat.id, text)
 
-    elif command == "exit":
-        print("До свидания!")
-        break
+
+@bot.message_handler(commands=["show", "print"])
+def show(message):
+    command = message.text.split(maxsplit=1)
+    date = command[1].lower()
+    text = ""
+    if date in tasks:
+        text = date.upper() + "\n"
+        for task in tasks[date]:
+            text = text + "- " + task + "\n"
     else:
-        print("Неизвестная команда.")
+        text = "Задач на эту дату нет."
+    bot.send_message(message.chat.id, text)
+
+
+bot.polling(none_stop=True)
