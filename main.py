@@ -17,7 +17,7 @@ RANDOM_TASKS = [
 ]
 
 
-TOKEN = "6948048739:AAH9GENG2Jl6T24LUpXzluUjvDraZ_Yn6ho"
+TOKEN = ""
 bot = telebot.TeleBot(TOKEN)
 
 print("Здравствуйте.")
